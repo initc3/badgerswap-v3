@@ -34,6 +34,34 @@ upstream        git@github.com:initc3/badgerswap-v3.git (push)
 docker-compose -f docker-compose-dev.yml build
 ```
 
+## Running a demo
+TODO
+
+## Contributing
+
+### Ideas, questions, etc
+Use the [issues](https://github.com/initc3/badgerswap-v3/issues) to document problems,
+questions, ideas etc.
+
+Since this is a hackathon, do not hesitate to use the
+[issues](https://github.com/initc3/badgerswap-v3/issues) to document any idea, or
+question.
+
+Don't censor yourself!
+
+Any idea is welcome!
+
+We have very little time, and we can not afford to risk missing a good idea.
+So don't judge your ideas, leave this responsibility to time; time will tell.
+
+View the [issues](https://github.com/initc3/badgerswap-v3/issues) as a place to document
+brainstorming ideas!
+
+### Code
+To submit code, create a branch, push it to your fork, and make a pull request. Ask
+for help if you don't know how.
+
+
 ## Troubleshooting
 
 ### Expired TLS/SSL Certificates
