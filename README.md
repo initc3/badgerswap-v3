@@ -9,7 +9,7 @@ that you should first create a fork of the repository, and clone this fork.
 2. Clone your fork, e.g., if your GitHub username is `alice`:
 
 ```console
-git clone git@github.com:alice/badgerswap-v3.git
+git clone --recursive git@github.com:alice/badgerswap-v3.git
 ```
 
 Once you have clone the fork, add the `upstream` remote:
