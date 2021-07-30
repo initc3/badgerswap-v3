@@ -68,6 +68,15 @@ python -m ratel.src.python.badgerswapv3.trade
 ```
 
 ## Contributing
+Updating your main branch code to the latest main branch code:
+
+```console
+git fetch upstream
+git rebase upstream/main main
+```
+
+For another branch just replace `main` with the branch name.
+
 
 ### Ideas, questions, etc
 Use the [issues](https://github.com/initc3/badgerswap-v3/issues) to document problems,
