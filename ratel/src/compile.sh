@@ -43,24 +43,26 @@ parse() {
   rm mpc/$1.mpc
 }
 
-#bash setup-ssl.sh 4
-#mkdir -p ratel/genfiles/contracts
-#mkdir -p ratel/genfiles/python
-#mkdir -p ratel/genfiles/mpc
-
+bash setup-ssl.sh 4
 rm ratel/genfiles/mpc/* || true
 rm Programs/Source/* || true
 rm ratel/genfiles/contracts/* || true
+mkdir -p ratel/genfiles/contracts
+mkdir -p ratel/genfiles/python
+mkdir -p ratel/genfiles/mpc
+
+cp ratel/src/solidity/Token.sol ratel/genfiles/contracts/Token.sol
 
 cd ratel/genfiles
 
 compile_flexes
 
-parse hbswap
-parse volumeMatching
-parse rockPaperScissors
-parse fabcar
-parse review
+#parse hbswap
+#parse volumeMatching
+#parse rockPaperScissors
+#parse fabcar
+#parse review
+parse badgerswapv3
 
 compile_sol
 compile_mpc
