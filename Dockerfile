@@ -11,8 +11,8 @@ RUN git clone https://github.com/ethereum/go-ethereum.git
 
 COPY src /go/src/github.com/initc3/HoneyBadgerSwap/src
 
-WORKDIR /go/src/github.com/initc3/HoneyBadgerSwap/src
-RUN go get -d -v ./...
+# WORKDIR /go/src/github.com/initc3/HoneyBadgerSwap/src
+# RUN go get -d -v ./...
 
 # needed to deploy contracts
 # TODO: verify whether poa dir is really needed, or what is needed from it, maybe
