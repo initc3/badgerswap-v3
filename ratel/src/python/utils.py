@@ -7,6 +7,14 @@ from gmpy2 import mpz_from_old_binary
 def mpcPort():
     return 5000
 
+def key_balance(user, token):
+    print('key', f'balance_{user}_{token}')
+    return f'balance_{user}_{token}'.encode()
+
+def key_individual_price(trade_seq):
+    print('**** server', f'tradePrice_{trade_seq}')
+    return f'tradePrice_{trade_seq}'.encode()
+
 def key_inputmask(idx):
     return f'inputmask_{idx}'.encode()
 
@@ -46,6 +54,9 @@ def get_inverse(a):
         a = (a * a) % blsPrime
     return ret
 
+def fix_to_float(x):
+    return 1. * x / fp
+
 def recover_input(db, masked_value, idx): # return: int
     try:
         input_mask_share = db.Get(key_inputmask(idx))
@@ -53,6 +64,12 @@ def recover_input(db, masked_value, idx): # return: int
         input_mask_share = bytes(0)
     input_mask_share = int.from_bytes(input_mask_share, 'big')
     return (masked_value - input_mask_share) % blsPrime
+
+def get_value(db, key): # return: hex
+    try:
+        return bytes(db.Get(key))
+    except KeyError:
+        return int_to_hex(0)
 
 prog = './malicious-shamir-party.x'
 players = 4

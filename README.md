@@ -28,14 +28,44 @@ upstream        git@github.com:initc3/badgerswap-v3.git (fetch)
 upstream        git@github.com:initc3/badgerswap-v3.git (push)
 ```
 
-3. Build the image with `docker-compose-dev.yml`:
+3. Build the image:
 
 ```console
-docker-compose -f docker-compose-dev.yml build
+docker-compose -f dev.yml build --no-cache
 ```
 
 ## Running a demo
-TODO
+```console
+docker-compose -f dev.yml up -d
+```
+
+```console
+docker exec -it badgerswap-v3_dev_1 bash
+```
+
+```console
+./ratel/src/compile.sh
+```
+
+```console
+./ratel/src/python/badgerswapv3/run.sh
+```
+
+```console
+python -m ratel.src.python.badgerswapv3.deposit
+```
+
+```console
+python -m ratel.src.python.badgerswapv3.initPool
+```
+
+```console
+python -m ratel.src.python.badgerswapv3.addLiquidity
+```
+
+```console
+python -m ratel.src.python.badgerswapv3.trade
+```
 
 ## Contributing
 

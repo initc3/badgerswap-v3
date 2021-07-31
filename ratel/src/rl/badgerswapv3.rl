@@ -13,6 +13,10 @@ contract BadgerSwapV3 {
 
     mapping (address => mapping (address => uint)) public publicBalance;
 
+    mapping (address => mapping (address => string)) public estimatedPrice;
+    mapping (address => string) public estimatedPriceValue;
+    mapping (string => uint) public estimatedPriceCount;
+
     uint public tradeCnt;
 
     constructor() public {}
@@ -34,6 +38,9 @@ contract BadgerSwapV3 {
         publicBalance[user][token] -= amt;
 
         mpc(address user, address token, uint amt) {
+            user = user.lower()
+            token = token.lower()
+
             secretBalance = readDB(f'balance_{user}_{token}', int)
 
             mpcInput(sfix secretBalance, sfix amt)
@@ -42,23 +49,24 @@ contract BadgerSwapV3 {
 
             mpcOutput(sfix secretBalance)
 
-            print('**** secretBalance', token, secretBalance)
+            print('**** secretBalance', user, token, secretBalance)
+            print('**** key', f'balance_{user}_{token}')
             writeDB(f'balance_{user}_{token}', secretBalance, int)
         }
     }
 
-    function initPool(address token0, address token1, $uint sqrtPrice) public {
+    function initPool(address token0, address token1, uint sqrtPrice) public {
         require(token0 < token1);
 
-        mpc(address token0, address token1, $uint sqrtPrice) {
-            mpcInput(sfix sqrtPrice)
-                valid = (sqrtPrice > 0).reveal()
-                print_ln('**** sqrtPrice %s', sqrtPrice.reveal())
-            mpcOutput(cint valid)
+        mpc(address token0, address token1, uint sqrtPrice) {
+            _token0 = token0.lower()
+            _token1 = token1.lower()
 
-            print('**** valid', valid)
-            if valid == 1:
-                writeDB(f'sqrtPriceCurrent_{token0}_{token1}', sqrtPrice, int)
+            writeDB(f'sqrtPriceCurrent_{_token0}_{_token1}', sqrtPrice, int)
+
+            initPrice = str(fix_to_float(sqrtPrice) ** 2)
+            print('**** initPrice', initPrice, token0, token1)
+            set(estimatedPrice, string memory initPrice, address token0, address token1)
         }
     }
 
@@ -67,6 +75,9 @@ contract BadgerSwapV3 {
         address user = msg.sender;
 
         mpc(address user, address token0, address token1, $uint sqrtPriceLower, $uint sqrtPriceUpper, $uint maxAmt0, $uint maxAmt1) {
+            user = user.lower()
+            token0 = token0.lower()
+            token1 = token1.lower()
 
             balance0 = readDB(f'balance_{user}_{token0}', int)
             balance1 = readDB(f'balance_{user}_{token1}', int)
@@ -205,8 +216,12 @@ contract BadgerSwapV3 {
         uint tradeSeq = ++tradeCnt;
 
         mpc(uint tradeSeq, address user, address token0, address token1, $uint amt0, $uint amt1) {
-            balance0 = readDB(f'balance_{user}_{token0}', int)
-            balance1 = readDB(f'balance_{user}_{token1}', int)
+            user = user.lower()
+            _token0 = token0.lower()
+            _token1 = token1.lower()
+
+            balance0 = readDB(f'balance_{user}_{_token0}', int)
+            balance1 = readDB(f'balance_{user}_{_token1}', int)
 
             mpcInput(sfix amt0, sfix amt1, sfix balance0, sfix balance1)
                 validOrder = amt0 * amt1 < 0
@@ -227,8 +242,8 @@ contract BadgerSwapV3 {
             if validOrder == 0:
                 continue
 
-            tickList = readDB(f'tickList_{token0}_{token1}', list)
-            sqrtPriceCurrent = readDB(f'sqrtPriceCurrent_{token0}_{token1}', int)
+            tickList = readDB(f'tickList_{_token0}_{_token1}', list)
+            sqrtPriceCurrent = readDB(f'sqrtPriceCurrent_{_token0}_{_token1}', int)
             print('**** tickList', tickList)
 
             sqrtPriceCurrentCopy = sqrtPriceCurrent
@@ -261,7 +276,7 @@ contract BadgerSwapV3 {
 
                         deltaToken0 += _deltaToken0
                         deltaToken1 += _deltaToken1
-                        sqrtPriceCurrent = inRange * sqrtPriceNew
+                        sqrtPriceCurrent = inRange * sqrtPriceNew + (1 - inRange) * sqrtPriceCurrent
                         amtIn -= sellToken0 * _deltaToken0 + sellToken1 * _deltaToken1
 
                         matched += inRange
@@ -279,7 +294,10 @@ contract BadgerSwapV3 {
                 if empty == 1 or matched == 0:
                     break
 
-            mpcInput(sfix balance0, sfix balance1, sfix deltaToken0, sfix deltaToken1, sint sellToken0, sint sellToken1, sfix amt0, sfix amt1, sfix sqrtPriceCurrentCopy, sfix sqrtPriceCurrent)
+            totalPrice = readDB(f'totalPrice_{_token0}_{_token1}', int)
+            totalCnt = readDB(f'totalCnt_{_token0}_{_token1}', int)
+
+            mpcInput(sfix balance0, sfix balance1, sfix deltaToken0, sfix deltaToken1, sint sellToken0, sint sellToken1, sfix amt0, sfix amt1, sfix sqrtPriceCurrentCopy, sfix sqrtPriceCurrent, sfix totalCnt, sfix totalPrice)
                 satisfied = (sellToken0 * (deltaToken1 <= amt1) + sellToken1 * (deltaToken0 <= amt0)).reveal()
                 print_ln('**** satisfied %s', satisfied.reveal())
                 balance0 -= satisfied * deltaToken0
@@ -290,13 +308,33 @@ contract BadgerSwapV3 {
                 print_ln('**** sqrtPriceCurrent %s', sqrtPriceCurrent.reveal())
                 tradePrice = -satisfied * deltaToken1 / deltaToken0
                 print_ln('**** tradePrice %s', tradePrice.reveal())
-            mpcOutput(sfix balance0, sfix balance1, sfix sqrtPriceCurrent, sfix tradePrice)
 
-            writeDB(f'balance_{user}_{token0}', balance0, int)
-            writeDB(f'balance_{user}_{token1}', balance1, int)
-            writeDB(f'sqrtPriceCurrent_{token0}_{token1}', sqrtPriceCurrent, int)
+                totalCnt += satisfied
+                totalPrice += tradePrice
+                print_ln('**** totalCnt %s totalPrice %s', totalCnt.reveal(), totalPrice.reveal())
+
+                batchSize = 2
+                batchPrice = sfix(0).reveal()
+                if_then(totalCnt.reveal() >= batchSize)
+                batchPrice = (totalPrice / totalCnt).reveal()
+                print_ln('lalala')
+                end_if()
+                print_ln('**** batchPrice %s', batchPrice)
+            mpcOutput(sfix balance0, sfix balance1, sfix sqrtPriceCurrent, sfix tradePrice, sfix totalCnt, sfix totalPrice, cfix batchPrice)
+
+            writeDB(f'balance_{user}_{_token0}', balance0, int)
+            writeDB(f'balance_{user}_{_token1}', balance1, int)
+            writeDB(f'sqrtPriceCurrent_{_token0}_{_token1}', sqrtPriceCurrent, int)
+            print('****', f'tradePrice_{tradeSeq}')
             writeDB(f'tradePrice_{tradeSeq}', tradePrice, int)
-            # update trade sqrtPrice
+            if batchPrice > 0:
+                batchPrice = str(1. * batchPrice / fp)
+                print('**** batchPrice', batchPrice)
+                set(estimatedPrice, string memory batchPrice, address token0, address token1)
+                totalPrice = 0
+                totalCnt = 0
+            writeDB(f'totalPrice_{_token0}_{_token1}', totalPrice, int)
+            writeDB(f'totalCnt_{_token0}_{_token1}', totalCnt, int)
         }
     }
 }
