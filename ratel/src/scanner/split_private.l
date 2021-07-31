@@ -75,7 +75,7 @@ void initPython() {
     textPython += "import asyncio\n";
     textPython += "import os\n";
     textPython += "import subprocess\n";
-    textPython += "from ratel.src.python.utils import location_sharefile, prog, players, threshold, mpcPort, blsPrime, sz, int_to_hex, hex_to_int, recover_input, fp\n";
+    textPython += "from ratel.src.python.utils import location_sharefile, prog, players, threshold, mpcPort, blsPrime, sz, int_to_hex, hex_to_int, recover_input, fp, fix_to_float\n";
     textPython += "\n";
 
     string pythonFile = "python/" + fileName + ".py";

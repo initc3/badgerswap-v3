@@ -9,7 +9,6 @@ def approve(tokenContract, receiver, amt):
     tx_hash = tokenContract.functions.approve(receiver, int(amt * fp)).transact()
     web3.eth.wait_for_transaction_receipt(tx_hash)
 
-
 def deposit(appContract, token, amt, tokenContract):
     if token == ETH:
         tx_hash = appContract.functions.publicDeposit(token, int(amt * fp)).transact(
@@ -23,7 +22,6 @@ def deposit(appContract, token, amt, tokenContract):
 
     tx_hash = appContract.functions.secretDeposit(token, int(amt * fp)).transact()
     web3.eth.wait_for_transaction_receipt(tx_hash)
-
 
 if __name__ == "__main__":
     web3 = Web3(Web3.WebsocketProvider(url))

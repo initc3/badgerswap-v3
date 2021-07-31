@@ -7,6 +7,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+      - "4002:4002"
+      - "4003:4003"
+      - "8545:8545"
     volumes:
       - ./ratel:/usr/src/hbswap/ratel
       - ./MP-SPDZ/compile.py:/usr/src/hbswap/compile.py

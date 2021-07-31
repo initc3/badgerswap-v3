@@ -15,7 +15,6 @@ from ratel.src.python.deploy import (
 )
 from ratel.src.python.utils import fp, blsPrime
 
-
 def trade(appContract, tokenA, tokenB, amtA, amtB):
     amtA = int(amtA * fp)
     amtB = int(amtB * fp)
