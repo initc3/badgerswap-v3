@@ -1,0 +1,6 @@
+ipython
+sphinx
+sphinxcontrib-bibtex
+sphinx-book-theme
+sphinx-proof
+sphinx-togglebutton

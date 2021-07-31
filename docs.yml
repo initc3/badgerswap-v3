@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  builddocs:
+    build:
+      context: .
+      dockerfile: docs.Dockerfile
+    volumes:
+      - ./docs:/usr/src/docs
+    command: make html
+  viewdocs:
+    image: nginx
+    ports:
+      - '50123:80'
+    volumes:
+      - ./docs/_build/html:/usr/share/nginx/html
